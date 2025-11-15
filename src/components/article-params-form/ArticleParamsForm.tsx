@@ -2,7 +2,7 @@ import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Select } from 'src/ui/select';
 import {
 	backgroundColors,
@@ -15,12 +15,15 @@ import {
 import { Text } from 'src/ui/text';
 import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
-import { setPage } from 'src/index';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
+import { TPageState } from 'src/index';
 
 type TFormProps = {
-	mainRef: React.RefObject<HTMLElement>;
+	setPageState: React.Dispatch<React.SetStateAction<TPageState>>;
+	pageState: TPageState;
 };
 export const ArticleParamsForm = (props: TFormProps) => {
+	const rootRef = useRef(null);
 	const [isFormOpen, setFormOpen] = useState(false);
 	const [formState, setFormState] = useState({
 		fontSelected: defaultArticleState.fontFamilyOption,
@@ -29,8 +32,11 @@ export const ArticleParamsForm = (props: TFormProps) => {
 		bgColorSelected: defaultArticleState.backgroundColor,
 		selectedContentWidth: defaultArticleState.contentWidth,
 	});
-
-	const mainElement = props.mainRef.current;
+	useOutsideClickClose({
+		isOpen: isFormOpen,
+		rootRef: rootRef,
+		onChange: () => setFormOpen(false),
+	});
 
 	return (
 		<>
@@ -41,6 +47,7 @@ export const ArticleParamsForm = (props: TFormProps) => {
 				}}
 			/>
 			<aside
+				ref={rootRef}
 				className={clsx(
 					styles.container,
 					isFormOpen ? styles.container_open : ''
@@ -100,21 +107,21 @@ export const ArticleParamsForm = (props: TFormProps) => {
 							htmlType='reset'
 							type='clear'
 							onClick={() => {
-								setPage(
-									mainElement,
-									defaultArticleState.fontFamilyOption.value,
-									defaultArticleState.fontSizeOption.value,
-									defaultArticleState.fontColor.value,
-									defaultArticleState.contentWidth.value,
-									defaultArticleState.backgroundColor.value
-								);
+								props.setPageState({
+									fontFamily: defaultArticleState.fontFamilyOption.value,
+									fontSize: defaultArticleState.fontSizeOption.value,
+									fontColor: defaultArticleState.fontColor.value,
+									containerWidth: defaultArticleState.contentWidth.value,
+									bgColor: defaultArticleState.backgroundColor.value,
+								});
 								setFormState({
 									fontSelected: defaultArticleState.fontFamilyOption,
 									fontSizeSelected: defaultArticleState.fontSizeOption,
 									fontColorSelected: defaultArticleState.fontColor,
-									bgColorSelected: defaultArticleState.backgroundColor,
 									selectedContentWidth: defaultArticleState.contentWidth,
+									bgColorSelected: defaultArticleState.backgroundColor,
 								});
+								console.log(props.pageState);
 							}}
 						/>
 
@@ -124,14 +131,14 @@ export const ArticleParamsForm = (props: TFormProps) => {
 							type='apply'
 							onClick={(e) => {
 								e.preventDefault();
-								setPage(
-									mainElement,
-									formState.fontSelected.value,
-									formState.fontSizeSelected.value,
-									formState.fontColorSelected.value,
-									formState.selectedContentWidth.value,
-									formState.bgColorSelected.value
-								);
+
+								props.setPageState({
+									fontFamily: formState.fontSelected.value,
+									fontSize: formState.fontSizeSelected.value,
+									fontColor: formState.fontColorSelected.value,
+									containerWidth: formState.selectedContentWidth.value,
+									bgColor: formState.bgColorSelected.value,
+								});
 							}}
 						/>
 					</div>

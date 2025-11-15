@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { StrictMode, CSSProperties, useRef } from 'react';
+import { StrictMode, CSSProperties, useState } from 'react';
 import clsx from 'clsx';
 
 import { Article } from './components/article/Article';
@@ -11,37 +11,35 @@ import styles from './styles/index.module.scss';
 const domNode = document.getElementById('root') as HTMLDivElement;
 const root = createRoot(domNode);
 
-export function setPage(
-	element: HTMLElement | null,
-	fontFamily: string,
-	fontSize: string,
-	fontColor: string,
-	containerWidth: string,
-	bgColor: string
-) {
-	element?.style.setProperty('--font-family', fontFamily);
-	element?.style.setProperty('--font-size', fontSize);
-	element?.style.setProperty('--font-color', fontColor);
-	element?.style.setProperty('--container-width', containerWidth);
-	element?.style.setProperty('--bg-color', bgColor);
-}
+export type TPageState = {
+	fontFamily: string;
+	fontSize: string;
+	fontColor: string;
+	containerWidth: string;
+	bgColor: string;
+};
 
 const App = () => {
-	const mainRef = useRef<HTMLElement>(null);
+	const [pageState, setPageState] = useState({
+		fontFamily: defaultArticleState.fontFamilyOption.value,
+		fontSize: defaultArticleState.fontSizeOption.value,
+		fontColor: defaultArticleState.fontColor.value,
+		containerWidth: defaultArticleState.contentWidth.value,
+		bgColor: defaultArticleState.backgroundColor.value,
+	});
 	return (
 		<main
 			className={clsx(styles.main)}
 			style={
 				{
-					'--font-family': defaultArticleState.fontFamilyOption.value,
-					'--font-size': defaultArticleState.fontSizeOption.value,
-					'--font-color': defaultArticleState.fontColor.value,
-					'--container-width': defaultArticleState.contentWidth.value,
-					'--bg-color': defaultArticleState.backgroundColor.value,
+					'--font-family': pageState.fontFamily,
+					'--font-size': pageState.fontSize,
+					'--font-color': pageState.fontColor,
+					'--container-width': pageState.containerWidth,
+					'--bg-color': pageState.bgColor,
 				} as CSSProperties
-			}
-			ref={mainRef}>
-			<ArticleParamsForm mainRef={mainRef} />
+			}>
+			<ArticleParamsForm setPageState={setPageState} pageState={pageState} />
 			<Article />
 		</main>
 	);
